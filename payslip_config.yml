@@ -1,0 +1,77 @@
+##########################################################################################
+#                                                                                        #
+#                               Payslip Explainator Config                               #                          
+#                                                                                        #
+##########################################################################################
+#
+# The following config values are the items in your payslip that do not usually change
+# from month to month.
+#
+# NOTE: all the values should be monthly values
+#
+
+regular_salary: 2916.64 # ~35k per annum
+
+# Pension Contribution
+# If you are contributing to your pension, enter your % contribution here. Leave as 0 if
+# you are not contributing
+pension_contribution_percentage: 3
+
+# Employee Stock Purchase Program
+# If you are enrolled in an ESPP, enter your % contribution
+# here. Leave as 0 if you are not enrolled
+espp: 5
+
+# Car Allowance
+# Car allowance is special. You can receive it as either cash, or as a benefit in kind.
+# How you receive it has different determinations for net pay. Set type to 'cash' or
+# 'bik' as appropriate for your circumstance and add its value.
+# If you do not receive a car allowance, set as 'none'
+car_allowance:
+ type: 'none' # 'cash' or 'bik' or 'none'
+ value: 0
+
+# Salary Sacrifices
+# Add any salary sacrifice relevant to you by putting it in with a key and value.
+# Example:
+# <SPACE>other_salary_sacrifice: 123.45
+salary_sacrifice:
+ # Cycle to Work Scheme
+ # If you are taking part in the cycle to work scheme, enter your monthly deduction. Leave
+ # as 0 if you are not taking part
+ cycle_to_work: 83.33
+ # Purchased Holidays
+ # If you purchased additional holiday days enter the cost per month
+ purchased_holidays_cost: 0
+
+# Benefit in Kind
+# Add any benefit in kind items relevant to you by putting it in with a key and a value.
+# Example:
+# <SPACE>other_bik: 123.45
+benefit_in_kind:
+ health_insurance: 110.21
+
+# Misc Deductions
+# These are miscellaneous deductions that are taken out after tax has been paid.
+# Add any deduction items relevant to you by putting it in with a key and a value.
+# Example:
+# <SPACE>other_deduction: 123.45
+misc_deductions:
+ # Sports & Social
+ # Enter your Sports & Social Club deduction amount. Leave as 0 if you are not a member
+ sports_and_social: 12.50
+
+# TAX DETAILS
+# The values for these items can be gotten from your Tax Certificate for the year.
+# You can get your certificate online via the PAYE Online service, or by rining your local
+# Revenue office.
+#
+# NOTE: These need to be monthly values
+
+# PAYE
+standard_cutoff_rate: 2733.34
+tax_credit: 275
+
+# USC
+two_percent_band: 836.34 # Probably 836.34
+four_percent_band: 498.34 # Probably 498.34
