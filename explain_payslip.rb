@@ -216,7 +216,6 @@ pli_bonus = gets.to_d
 print 'Did you receive a CAP Award or Connected Recognition Award this month? Enter 0 for no awards or the GROSS total for the awards. >: '
 gross_bonus_award = gets.to_d
 
-puts "\nOther Benefit in Kind"
 bik_to_enter = true
 print 'Do you have a variable benefit in kind you want to enter? (yes or no) >: '
 bik_to_enter = gets.strip == 'yes' ? true : false
@@ -230,6 +229,9 @@ while bik_to_enter
   bik_to_enter = gets.strip == 'yes' ? true : false
 end
 
+print 'Did you receive any refunds this pay period? Enter 0 for no refunds >: '
+refund = gets.to_d
+
 print_header "Input Values"
 puts "These are the values the script is using to calculate your payslip\n"
 puts "-Regular Salary: #{regular_salary.to_digits}"
@@ -239,6 +241,7 @@ puts "-Pension Contribution: #{pension_contribution_percentage.to_digits}%"
 puts "-ESPP: #{espp_contribution_percentage.to_digits}%"
 puts "-Car Allowance: #{car_allowance_hash}"
 puts "-Salary Sacrifice: #{salary_sacrifice_hash}"
+puts "-Refund: #{refund.to_digits}"
 puts "-Benefit in Kind: #{benefit_in_kind_hash}"
 puts "-Misc Deductions: #{misc_deductions_hash}"
 puts "-PAYE Standard rate cutoff: #{standard_cutoff_rate.to_digits}"
@@ -396,13 +399,14 @@ pause unless !options.pause
 # Net Pay ################################################################################
 print_header "Net Pay" 
 puts "\t  #{gross_income.to_digits}\t(Gross Income)"
+puts "\t+ #{refund.to_digits}\t(Refund)"
 puts "\t- #{paye_result['paye'].to_digits}\t(PAYE)"
 puts "\t- #{usc_result['usc'].to_digits}\t(USC)"
 puts "\t- #{total_prsi.to_digits}\t(PRSI)"
 puts "\t- #{pension_contribution.to_digits}\t(Pension Contribution)"
 puts "\t- #{espp.to_digits}\t(ESPP)"
 puts "\t- #{misc_deductions_total.to_digits}\t(Misc Deductions)"
-net_income = gross_income - paye_result['paye'] - usc_result['usc'] - total_prsi - pension_contribution - espp - misc_deductions_total
+net_income = gross_income + refund - paye_result['paye'] - usc_result['usc'] - total_prsi - pension_contribution - espp - misc_deductions_total
 puts "\t= #{net_income.to_digits}"
 puts ""
 puts "TOTAL NET INCOME = #{net_income.to_digits}"
