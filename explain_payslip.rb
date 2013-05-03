@@ -10,7 +10,7 @@ require 'yaml'
 
 REPO_LINK = "http://github.com/nathanshox/PayslipExplainator"
 
-SCRIPT_VERSION = 0.5
+SCRIPT_VERSION = 1.0 
 SCRIPT_VERSION_FILE_URL = "https://raw.github.com/nathanshox/PayslipExplainator/master/version"
 
 class OptionsParser
