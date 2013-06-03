@@ -213,8 +213,19 @@ end
 print 'Did you receive a PL&I bonus this month? Enter 0 for no bonus. >: '
 pli_bonus = gets.to_d
 
-print 'Did you receive a CAP Award or Connected Recognition Award this month? Enter 0 for no awards or the GROSS total for the awards. >: '
+print 'Did you receive a CAP Award this month? Enter 0 for no award. >: '
 gross_bonus_award = gets.to_d
+
+print 'Did you receive a Connected Recognition Award this month? (yes or no) >: '
+if gets.strip == 'yes'
+  print 'What is the total voucher amount? >: '
+  cr_voucher_amount = gets.to_d
+  print 'what is the total gross amount on your payslip? >: '
+  cr_gross_amount = gets.to_d
+else
+  cr_voucher_amount = BigDecimal.new("0")
+  cr_gross_amount = BigDecimal.new("0")
+end
 
 bik_to_enter = true
 print 'Do you have a variable benefit in kind you want to enter? (yes or no) >: '
@@ -236,7 +247,10 @@ print_header "Input Values"
 puts "These are the values the script is using to calculate your payslip\n"
 puts "-Regular Salary: #{regular_salary.to_digits}"
 puts "-PL&I Bonus: #{pli_bonus.to_digits}"
-puts "-CAP Award/Connected Recognition Awards: #{gross_bonus_award.to_digits}"
+puts "-CAP Award: #{gross_bonus_award.to_digits}"
+puts "-Connected Recognition Award"
+puts "\tVoucher Amount: #{cr_voucher_amount.to_digits}"
+puts "\tGross Amount: #{cr_gross_amount.to_digits}"
 puts "-Pension Contribution: #{pension_contribution_percentage.to_digits}%"
 puts "-ESPP: #{espp_contribution_percentage.to_digits}%"
 puts "-Car Allowance: #{car_allowance_hash}"
@@ -276,8 +290,9 @@ pause unless !options.pause
 # Gross Income ###########################################################################
 print_header "Gross Income"
 puts "Gross Income\t+ #{regular_salary.to_digits}\t\t(Regular salary)"
-puts "\t\t+ #{gross_bonus_award.to_digits}\t\t(Total CAP Award/Connected Recognition Awards)"
+puts "\t\t+ #{gross_bonus_award.to_digits}\t\t(CAP Award)"
 puts "\t\t+ #{pli_bonus.to_digits}\t\t(PL&I Bonus)"
+puts "\t\t+ #{cr_gross_amount.to_digits}\t\t(Connected Recognition Gross Amount)"
 if car_allowance_hash["type"] == "cash"
   car_allowance = BigDecimal.new(car_allowance_hash["value"].to_s)
   puts "\t\t+ #{car_allowance.to_digits}\t\t(Car Allowance)"
@@ -285,7 +300,7 @@ else
   car_allowance = BigDecimal.new("0")
 end
 puts "\t\t- #{salary_sacrifice_total.to_digits}\t\t(Salary Sacrifices)"
-gross_income = regular_salary + gross_bonus_award + pli_bonus + car_allowance - salary_sacrifice_total
+gross_income = regular_salary + gross_bonus_award + pli_bonus + cr_gross_amount + car_allowance - salary_sacrifice_total
 puts ""
 puts "TOTAL GROSS INCOME = #{gross_income.to_digits}"
 
@@ -400,13 +415,14 @@ pause unless !options.pause
 print_header "Net Pay" 
 puts "\t  #{gross_income.to_digits}\t(Gross Income)"
 puts "\t+ #{refund.to_digits}\t(Refund)"
+puts "\t- #{cr_voucher_amount.to_digits}\t(Connected Recognition Voucher)"
 puts "\t- #{paye_result['paye'].to_digits}\t(PAYE)"
 puts "\t- #{usc_result['usc'].to_digits}\t(USC)"
 puts "\t- #{total_prsi.to_digits}\t(PRSI)"
 puts "\t- #{pension_contribution.to_digits}\t(Pension Contribution)"
 puts "\t- #{espp.to_digits}\t(ESPP)"
 puts "\t- #{misc_deductions_total.to_digits}\t(Misc Deductions)"
-net_income = gross_income + refund - paye_result['paye'] - usc_result['usc'] - total_prsi - pension_contribution - espp - misc_deductions_total
+net_income = gross_income + refund - cr_voucher_amount - paye_result['paye'] - usc_result['usc'] - total_prsi - pension_contribution - espp - misc_deductions_total
 puts "\t= #{net_income.to_digits}"
 puts ""
 puts "TOTAL NET INCOME = #{net_income.to_digits}"
