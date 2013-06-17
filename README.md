@@ -1,4 +1,4 @@
-#PayslipExplainator
+#PayslipExplainator [![Code Climate](https://codeclimate.com/github/nathanshox/PayslipExplainator.png)](https://codeclimate.com/github/nathanshox/PayslipExplainator)
 
 The Payslip Explainator is a script that can be used
 * to verify a monthly payslip
