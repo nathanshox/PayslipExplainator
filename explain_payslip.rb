@@ -3,14 +3,22 @@
 require 'bigdecimal'
 require 'bigdecimal/util'
 require 'open-uri'
+require 'openssl'
 require 'optparse'
 require 'ostruct'
 require 'rbconfig'
 require 'yaml'
 
+# For 1.8 we need to redefine the SSL::VERIFY_PEER constant so that clients can reach
+# the version file on Github (mainly a problem on Windows). Modifying this constant is
+# only applicable for Ruby versions =< 1.8 so we don't bother doing it for any others (they
+# are passed an arg to the open() method). Redefining this constant results in a warning on the
+# output. Hopefully users will just ignore it.
+OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE unless RUBY_VERSION.to_f > 1.8
+
 REPO_LINK = "http://github.com/nathanshox/PayslipExplainator"
 
-SCRIPT_VERSION = 1.0 
+SCRIPT_VERSION = 1.0
 SCRIPT_VERSION_FILE_URL = "https://raw.github.com/nathanshox/PayslipExplainator/master/version"
 
 class OptionsParser
@@ -167,7 +175,12 @@ if options.check_for_update
   begin
     puts "Checking for new version of the script..."
     # TODO Add a timeout here
-    latest_version = open(SCRIPT_VERSION_FILE_URL).read.to_f
+    if RUBY_VERSION.to_f < 1.9
+      latest_version = open(SCRIPT_VERSION_FILE_URL).read.to_f
+    else
+      latest_version = open(SCRIPT_VERSION_FILE_URL, :ssl_verify_mode => OpenSSL::SSL::VERIFY_NONE).read.to_f
+    end
+
     if latest_version > SCRIPT_VERSION
       puts "Version #{latest_version} of script is available. You are currently using version #{SCRIPT_VERSION}."
       puts "You can download the latest script from #{REPO_LINK}"
