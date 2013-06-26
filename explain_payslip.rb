@@ -98,8 +98,7 @@ def load_bd_from_config(config, key)
   return BigDecimal.new(value.to_s)
 end
 
-# puz (pring unless zero)
-# will puts string unless value is zero
+# puz (print unless zero)
 def puz(string, value)
   puts string unless value.zero?
 end
