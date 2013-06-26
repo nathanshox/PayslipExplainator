@@ -98,12 +98,18 @@ def load_bd_from_config(config, key)
   return BigDecimal.new(value.to_s)
 end
 
+# puz (pring unless zero)
+# will puts string unless value is zero
+def puz(string, value)
+  puts string unless value.zero?
+end
+
 # Print out hash values, and return sum of values
 def print_and_total_hash(input_hash)
   total = BigDecimal.new("0")
   input_hash.each do |key, value|
     v = BigDecimal.new(value.to_s)
-    puts "\t#{v.to_digits}\t(#{key.gsub("_", " ").capitalize})"
+    puz "\t#{v.to_digits}\t(#{key.gsub("_", " ").capitalize})", v
     total = total + v
   end
   return total
@@ -305,18 +311,18 @@ pause unless !options.pause
 
 # Gross Income ###########################################################################
 print_header "Gross Income"
-puts "Gross Income\t+ #{regular_salary.to_digits}\t\t(Regular salary)"
-puts "\t\t+ #{extra_pay.to_digits}\t\t(Overtime/On-Call Pay)"
-puts "\t\t+ #{gross_bonus_award.to_digits}\t\t(CAP Award)"
-puts "\t\t+ #{pli_bonus.to_digits}\t\t(PL&I Bonus)"
-puts "\t\t+ #{cr_gross_amount.to_digits}\t\t(Connected Recognition Gross Amount)"
+puz "Gross Income\t+ #{regular_salary.to_digits}\t\t(Regular salary)", regular_salary
+puz "\t\t+ #{extra_pay.to_digits}\t\t(Overtime/On-Call Pay)", extra_pay
+puz "\t\t+ #{gross_bonus_award.to_digits}\t\t(CAP Award)", gross_bonus_award
+puz "\t\t+ #{pli_bonus.to_digits}\t\t(PL&I Bonus)", pli_bonus
+puz "\t\t+ #{cr_gross_amount.to_digits}\t\t(Connected Recognition Gross Amount)", cr_gross_amount
 if car_allowance_hash["type"] == "cash"
   car_allowance = BigDecimal.new(car_allowance_hash["value"].to_s)
   puts "\t\t+ #{car_allowance.to_digits}\t\t(Car Allowance)"
 else
   car_allowance = BigDecimal.new("0")
 end
-puts "\t\t- #{salary_sacrifice_total.to_digits}\t\t(Salary Sacrifices)"
+puz "\t\t- #{salary_sacrifice_total.to_digits}\t\t(Salary Sacrifices)", salary_sacrifice_total
 gross_income = regular_salary + extra_pay + gross_bonus_award + pli_bonus + cr_gross_amount + car_allowance - salary_sacrifice_total
 puts ""
 puts "TOTAL GROSS INCOME = #{gross_income.to_digits}"
@@ -350,9 +356,9 @@ pause unless !options.pause
 
 # Calculate PAYE #########################################################################
 print_header "PAYE"
-puts "Input for PAYE\t+ #{gross_income.to_digits}\t\t(Gross Income)"
-puts "\t\t+ #{bik_total.to_digits}\t\t(Benefit In Kind)"
-puts "\t\t- #{pension_contribution.to_digits}\t\t(Pension Contribution)"
+puz "Input for PAYE\t+ #{gross_income.to_digits}\t\t(Gross Income)", gross_income
+puz "\t\t+ #{bik_total.to_digits}\t\t(Benefit In Kind)", bik_total
+puz "\t\t- #{pension_contribution.to_digits}\t\t(Pension Contribution)", pension_contribution
 paye_input = gross_income + bik_total - pension_contribution
 puts "Total Input\t= #{paye_input.to_digits}"
 puts ""
@@ -370,8 +376,8 @@ pause unless !options.pause
 
 # Calculate USC ##########################################################################
 print_header "USC"
-puts "Input for USC\t+ #{gross_income.to_digits}\t\t(Gross Income)"
-puts "\t\t+ #{bik_total.to_digits}\t\t(Benefit In Kind)"
+puz "Input for USC\t+ #{gross_income.to_digits}\t\t(Gross Income)", gross_income
+puz "\t\t+ #{bik_total.to_digits}\t\t(Benefit In Kind)", bik_total
 usc_input = gross_income + bik_total
 puts "Total Input\t= #{usc_input.to_digits}"
 puts ""
@@ -388,8 +394,8 @@ pause unless !options.pause
 
 # Calculate PRSI #########################################################################
 print_header "PRSI"
-puts "Input for PRSI\t+ #{gross_income.to_digits}\t\t(Gross Income)"
-puts "\t\t+ #{bik_total.to_digits}\t\t(Benefit In Kind)"
+puz "Input for PRSI\t+ #{gross_income.to_digits}\t\t(Gross Income)", gross_income
+puz "\t\t+ #{bik_total.to_digits}\t\t(Benefit In Kind)", bik_total
 prsi_input = gross_income + bik_total
 puts "Total Input\t= #{prsi_input.to_digits}"
 puts ""
@@ -404,9 +410,9 @@ pause unless !options.pause
 # Calculate ESPP #########################################################################
 if espp_contribution_percentage > 0
   print_header "ESPP"
-  puts "Input for ESPP\t+ #{regular_salary.to_digits}\t(Regular Salary)"
-  puts "\t\t+ #{extra_pay.to_digits}\t(Overtime/On-Call Pay)"
-  puts "\t\t+ #{pli_bonus.to_digits}\t(PL&I Bonus)"
+  puz "Input for ESPP\t+ #{regular_salary.to_digits}\t(Regular Salary)", regular_salary
+  puz "\t\t+ #{extra_pay.to_digits}\t(Overtime/On-Call Pay)", extra_pay
+  puz "\t\t+ #{pli_bonus.to_digits}\t(PL&I Bonus)", pli_bonus
   espp_input = regular_salary + extra_pay + pli_bonus
   puts "Total Input\t= #{espp_input.to_digits}"
   puts ""
@@ -431,15 +437,15 @@ pause unless !options.pause
 
 # Net Pay ################################################################################
 print_header "Net Pay" 
-puts "\t  #{gross_income.to_digits}\t(Gross Income)"
-puts "\t+ #{refund.to_digits}\t(Refund)"
-puts "\t- #{cr_voucher_amount.to_digits}\t(Connected Recognition Voucher)"
-puts "\t- #{paye_result['paye'].to_digits}\t(PAYE)"
-puts "\t- #{usc_result['usc'].to_digits}\t(USC)"
-puts "\t- #{total_prsi.to_digits}\t(PRSI)"
-puts "\t- #{pension_contribution.to_digits}\t(Pension Contribution)"
-puts "\t- #{espp.to_digits}\t(ESPP)"
-puts "\t- #{misc_deductions_total.to_digits}\t(Misc Deductions)"
+puz "\t  #{gross_income.to_digits}\t(Gross Income)", gross_income
+puz "\t+ #{refund.to_digits}\t(Refund)", refund
+puz "\t- #{cr_voucher_amount.to_digits}\t(Connected Recognition Voucher)", cr_voucher_amount
+puz "\t- #{paye_result['paye'].to_digits}\t(PAYE)", paye_result['paye']
+puz "\t- #{usc_result['usc'].to_digits}\t(USC)", usc_result['usc']
+puz "\t- #{total_prsi.to_digits}\t(PRSI)", total_prsi
+puz "\t- #{pension_contribution.to_digits}\t(Pension Contribution)", pension_contribution
+puz "\t- #{espp.to_digits}\t(ESPP)", espp
+puz "\t- #{misc_deductions_total.to_digits}\t(Misc Deductions)", misc_deductions_total
 net_income = gross_income + refund - cr_voucher_amount - paye_result['paye'] - usc_result['usc'] - total_prsi - pension_contribution - espp - misc_deductions_total
 puts "\t= #{net_income.to_digits}"
 puts ""
