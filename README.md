@@ -8,10 +8,11 @@ The Payslip Explainator is a script that can be used
 It was originally made for Cisco Ireland employees to help with issues around payroll, but with little or no modification it should be suitable for most workers in Ireland.
 
 ## How to use
-1. Download the script ([explain_payslip.rb](https://raw.github.com/nathanshox/PayslipExplainator/master/explain_payslip.rb)) and the config file ([payslip_config.yml](https://raw.github.com/nathanshox/PayslipExplainator/master/payslip_config.yml)).
-2. Fill in required values in the config file.
-3. Run the script with the command ```$ruby explain_payslip.rb```
-4. The script will ask you for other items such as bonuses etc for the pay period.
+1. [Download](https://github.com/nathanshox/PayslipExplainator/archive/master.zip) or [clone](https://github.com/nathanshox/PayslipExplainator) the project to your local machine
+2. Fill in required values in the config file (```payslip_config.yml```)
+3. From a terminal in the project's directory, run the script with the command ```$ruby explain_payslip.rb```
+4. The script will ask you for more input such as bonus payments, refunds etc for the pay period
+5. _*KABLOOM*_ Your payslip explained!
 
 ## Options
 You can see all the options for the script by running ```$ruby explain_payslip.rb -h```
@@ -33,4 +34,4 @@ You will need:
 * Ruby installed
   * Mac and Linux operating systems typically already have Ruby installed
   * There is an installer available for Windows at http://rubyinstaller.org/
-  * The script was tested with versions 1.8.7, 1.9.3, and 2.0
+  * The script was tested with versions 1.8.7, 1.9.2, 1.9.3, and 2.0.0
