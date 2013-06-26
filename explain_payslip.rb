@@ -40,7 +40,6 @@ class OptionsParser
       opts.separator ""
       opts.separator "Specific options:"
 
-      # Cast 'delay' argument to a Float.
       opts.on("--config PATH", "Specify path to config file") do |path|
         options.config_file_path = path
       end
