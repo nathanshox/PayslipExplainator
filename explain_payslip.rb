@@ -222,6 +222,9 @@ else
 end
 
 # Get other input values #################################################################
+print 'Did you receive overtime or on-call pay this month? Enter 0 for no extra pay. >: '
+extra_pay = gets.to_d
+
 print 'Did you receive a PL&I bonus this month? Enter 0 for no bonus. >: '
 pli_bonus = gets.to_d
 
@@ -258,6 +261,7 @@ refund = gets.to_d
 print_header "Input Values"
 puts "These are the values the script is using to calculate your payslip\n"
 puts "-Regular Salary: #{regular_salary.to_digits}"
+puts "-Overtime/On-Call Pay: #{extra_pay.to_digits}"
 puts "-PL&I Bonus: #{pli_bonus.to_digits}"
 puts "-CAP Award: #{gross_bonus_award.to_digits}"
 puts "-Connected Recognition Award"
@@ -302,6 +306,7 @@ pause unless !options.pause
 # Gross Income ###########################################################################
 print_header "Gross Income"
 puts "Gross Income\t+ #{regular_salary.to_digits}\t\t(Regular salary)"
+puts "\t\t+ #{extra_pay.to_digits}\t\t(Overtime/On-Call Pay)"
 puts "\t\t+ #{gross_bonus_award.to_digits}\t\t(CAP Award)"
 puts "\t\t+ #{pli_bonus.to_digits}\t\t(PL&I Bonus)"
 puts "\t\t+ #{cr_gross_amount.to_digits}\t\t(Connected Recognition Gross Amount)"
@@ -312,7 +317,7 @@ else
   car_allowance = BigDecimal.new("0")
 end
 puts "\t\t- #{salary_sacrifice_total.to_digits}\t\t(Salary Sacrifices)"
-gross_income = regular_salary + gross_bonus_award + pli_bonus + cr_gross_amount + car_allowance - salary_sacrifice_total
+gross_income = regular_salary + extra_pay + gross_bonus_award + pli_bonus + cr_gross_amount + car_allowance - salary_sacrifice_total
 puts ""
 puts "TOTAL GROSS INCOME = #{gross_income.to_digits}"
 
@@ -400,8 +405,9 @@ pause unless !options.pause
 if espp_contribution_percentage > 0
   print_header "ESPP"
   puts "Input for ESPP\t+ #{regular_salary.to_digits}\t(Regular Salary)"
+  puts "\t\t+ #{extra_pay.to_digits}\t(Overtime/On-Call Pay)"
   puts "\t\t+ #{pli_bonus.to_digits}\t(PL&I Bonus)"
-  espp_input = regular_salary + pli_bonus
+  espp_input = regular_salary + extra_pay + pli_bonus
   puts "Total Input\t= #{espp_input.to_digits}"
   puts ""
 
