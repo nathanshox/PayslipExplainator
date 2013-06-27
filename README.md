@@ -20,7 +20,7 @@ You can see all the options for the script by running ```$ruby explain_payslip.r
 Usage: explain_payslip.rb [options]
 
 Specific options:
-        --config PATH                Specify path to config file
+    -c, --config PATH                Specify path to a config file
     -p, --[no-]pause                 Pause after each calculation
     -n, --no-update-check            Do not check for new version of script
 

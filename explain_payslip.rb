@@ -40,7 +40,7 @@ class OptionsParser
       opts.separator ""
       opts.separator "Specific options:"
 
-      opts.on("--config PATH", "Specify path to config file") do |path|
+      opts.on("-c", "--config PATH", "Specify path to a config file") do |path|
         options.config_file_path = path
       end
 
