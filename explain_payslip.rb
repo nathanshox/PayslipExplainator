@@ -3,14 +3,22 @@
 require 'bigdecimal'
 require 'bigdecimal/util'
 require 'open-uri'
+require 'openssl'
 require 'optparse'
 require 'ostruct'
 require 'rbconfig'
 require 'yaml'
 
+# For 1.8 we need to redefine the SSL::VERIFY_PEER constant so that clients can reach
+# the version file on Github (mainly a problem on Windows). Modifying this constant is
+# only applicable for Ruby versions =< 1.8 so we don't bother doing it for any others (they
+# are passed an arg to the open() method). Redefining this constant results in a warning on the
+# output. Hopefully users will just ignore it.
+OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE unless RUBY_VERSION.to_f > 1.8
+
 REPO_LINK = "http://github.com/nathanshox/PayslipExplainator"
 
-SCRIPT_VERSION = 1.0 
+SCRIPT_VERSION = 1.1
 SCRIPT_VERSION_FILE_URL = "https://raw.github.com/nathanshox/PayslipExplainator/master/version"
 
 class OptionsParser
@@ -32,8 +40,7 @@ class OptionsParser
       opts.separator ""
       opts.separator "Specific options:"
 
-      # Cast 'delay' argument to a Float.
-      opts.on("--config PATH", "Specify path to config file") do |path|
+      opts.on("-c", "--config PATH", "Specify path to a config file") do |path|
         options.config_file_path = path
       end
 
@@ -91,12 +98,17 @@ def load_bd_from_config(config, key)
   return BigDecimal.new(value.to_s)
 end
 
+# puz (print unless zero)
+def puz(string, value)
+  puts string unless value.zero?
+end
+
 # Print out hash values, and return sum of values
 def print_and_total_hash(input_hash)
   total = BigDecimal.new("0")
   input_hash.each do |key, value|
     v = BigDecimal.new(value.to_s)
-    puts "\t#{v.to_digits}\t(#{key.gsub("_", " ").capitalize})"
+    puz "\t#{v.to_digits}\t(#{key.gsub("_", " ").capitalize})", v
     total = total + v
   end
   return total
@@ -167,7 +179,12 @@ if options.check_for_update
   begin
     puts "Checking for new version of the script..."
     # TODO Add a timeout here
-    latest_version = open(SCRIPT_VERSION_FILE_URL).read.to_f
+    if RUBY_VERSION.to_f < 1.9
+      latest_version = open(SCRIPT_VERSION_FILE_URL).read.to_f
+    else
+      latest_version = open(SCRIPT_VERSION_FILE_URL, :ssl_verify_mode => OpenSSL::SSL::VERIFY_NONE).read.to_f
+    end
+
     if latest_version > SCRIPT_VERSION
       puts "Version #{latest_version} of script is available. You are currently using version #{SCRIPT_VERSION}."
       puts "You can download the latest script from #{REPO_LINK}"
@@ -210,11 +227,25 @@ else
 end
 
 # Get other input values #################################################################
+print 'Did you receive overtime or on-call pay this month? Enter 0 for no extra pay. >: '
+extra_pay = gets.to_d
+
 print 'Did you receive a PL&I bonus this month? Enter 0 for no bonus. >: '
 pli_bonus = gets.to_d
 
-print 'Did you receive a CAP Award or Connected Recognition Award this month? Enter 0 for no awards or the GROSS total for the awards. >: '
+print 'Did you receive a CAP Award this month? Enter 0 for no award. >: '
 gross_bonus_award = gets.to_d
+
+print 'Did you receive a Connected Recognition Award this month? (yes or no) >: '
+if gets.strip == 'yes'
+  print 'What is the total voucher amount? >: '
+  cr_voucher_amount = gets.to_d
+  print 'what is the total gross amount on your payslip? >: '
+  cr_gross_amount = gets.to_d
+else
+  cr_voucher_amount = BigDecimal.new("0")
+  cr_gross_amount = BigDecimal.new("0")
+end
 
 bik_to_enter = true
 print 'Do you have a variable benefit in kind you want to enter? (yes or no) >: '
@@ -235,8 +266,12 @@ refund = gets.to_d
 print_header "Input Values"
 puts "These are the values the script is using to calculate your payslip\n"
 puts "-Regular Salary: #{regular_salary.to_digits}"
+puts "-Overtime/On-Call Pay: #{extra_pay.to_digits}"
 puts "-PL&I Bonus: #{pli_bonus.to_digits}"
-puts "-CAP Award/Connected Recognition Awards: #{gross_bonus_award.to_digits}"
+puts "-CAP Award: #{gross_bonus_award.to_digits}"
+puts "-Connected Recognition Award"
+puts "\tVoucher Amount: #{cr_voucher_amount.to_digits}"
+puts "\tGross Amount: #{cr_gross_amount.to_digits}"
 puts "-Pension Contribution: #{pension_contribution_percentage.to_digits}%"
 puts "-ESPP: #{espp_contribution_percentage.to_digits}%"
 puts "-Car Allowance: #{car_allowance_hash}"
@@ -275,17 +310,19 @@ pause unless !options.pause
 
 # Gross Income ###########################################################################
 print_header "Gross Income"
-puts "Gross Income\t+ #{regular_salary.to_digits}\t\t(Regular salary)"
-puts "\t\t+ #{gross_bonus_award.to_digits}\t\t(Total CAP Award/Connected Recognition Awards)"
-puts "\t\t+ #{pli_bonus.to_digits}\t\t(PL&I Bonus)"
+puz "Gross Income\t+ #{regular_salary.to_digits}\t\t(Regular salary)", regular_salary
+puz "\t\t+ #{extra_pay.to_digits}\t\t(Overtime/On-Call Pay)", extra_pay
+puz "\t\t+ #{gross_bonus_award.to_digits}\t\t(CAP Award)", gross_bonus_award
+puz "\t\t+ #{pli_bonus.to_digits}\t\t(PL&I Bonus)", pli_bonus
+puz "\t\t+ #{cr_gross_amount.to_digits}\t\t(Connected Recognition Gross Amount)", cr_gross_amount
 if car_allowance_hash["type"] == "cash"
   car_allowance = BigDecimal.new(car_allowance_hash["value"].to_s)
   puts "\t\t+ #{car_allowance.to_digits}\t\t(Car Allowance)"
 else
   car_allowance = BigDecimal.new("0")
 end
-puts "\t\t- #{salary_sacrifice_total.to_digits}\t\t(Salary Sacrifices)"
-gross_income = regular_salary + gross_bonus_award + pli_bonus + car_allowance - salary_sacrifice_total
+puz "\t\t- #{salary_sacrifice_total.to_digits}\t\t(Salary Sacrifices)", salary_sacrifice_total
+gross_income = regular_salary + extra_pay + gross_bonus_award + pli_bonus + cr_gross_amount + car_allowance - salary_sacrifice_total
 puts ""
 puts "TOTAL GROSS INCOME = #{gross_income.to_digits}"
 
@@ -318,9 +355,9 @@ pause unless !options.pause
 
 # Calculate PAYE #########################################################################
 print_header "PAYE"
-puts "Input for PAYE\t+ #{gross_income.to_digits}\t\t(Gross Income)"
-puts "\t\t+ #{bik_total.to_digits}\t\t(Benefit In Kind)"
-puts "\t\t- #{pension_contribution.to_digits}\t\t(Pension Contribution)"
+puz "Input for PAYE\t+ #{gross_income.to_digits}\t\t(Gross Income)", gross_income
+puz "\t\t+ #{bik_total.to_digits}\t\t(Benefit In Kind)", bik_total
+puz "\t\t- #{pension_contribution.to_digits}\t\t(Pension Contribution)", pension_contribution
 paye_input = gross_income + bik_total - pension_contribution
 puts "Total Input\t= #{paye_input.to_digits}"
 puts ""
@@ -338,8 +375,8 @@ pause unless !options.pause
 
 # Calculate USC ##########################################################################
 print_header "USC"
-puts "Input for USC\t+ #{gross_income.to_digits}\t\t(Gross Income)"
-puts "\t\t+ #{bik_total.to_digits}\t\t(Benefit In Kind)"
+puz "Input for USC\t+ #{gross_income.to_digits}\t\t(Gross Income)", gross_income
+puz "\t\t+ #{bik_total.to_digits}\t\t(Benefit In Kind)", bik_total
 usc_input = gross_income + bik_total
 puts "Total Input\t= #{usc_input.to_digits}"
 puts ""
@@ -356,8 +393,8 @@ pause unless !options.pause
 
 # Calculate PRSI #########################################################################
 print_header "PRSI"
-puts "Input for PRSI\t+ #{gross_income.to_digits}\t\t(Gross Income)"
-puts "\t\t+ #{bik_total.to_digits}\t\t(Benefit In Kind)"
+puz "Input for PRSI\t+ #{gross_income.to_digits}\t\t(Gross Income)", gross_income
+puz "\t\t+ #{bik_total.to_digits}\t\t(Benefit In Kind)", bik_total
 prsi_input = gross_income + bik_total
 puts "Total Input\t= #{prsi_input.to_digits}"
 puts ""
@@ -372,9 +409,10 @@ pause unless !options.pause
 # Calculate ESPP #########################################################################
 if espp_contribution_percentage > 0
   print_header "ESPP"
-  puts "Input for ESPP\t+ #{regular_salary.to_digits}\t(Regular Salary)"
-  puts "\t\t+ #{pli_bonus.to_digits}\t(PL&I Bonus)"
-  espp_input = regular_salary + pli_bonus
+  puz "Input for ESPP\t+ #{regular_salary.to_digits}\t(Regular Salary)", regular_salary
+  puz "\t\t+ #{extra_pay.to_digits}\t(Overtime/On-Call Pay)", extra_pay
+  puz "\t\t+ #{pli_bonus.to_digits}\t(PL&I Bonus)", pli_bonus
+  espp_input = regular_salary + extra_pay + pli_bonus
   puts "Total Input\t= #{espp_input.to_digits}"
   puts ""
 
@@ -398,15 +436,16 @@ pause unless !options.pause
 
 # Net Pay ################################################################################
 print_header "Net Pay" 
-puts "\t  #{gross_income.to_digits}\t(Gross Income)"
-puts "\t+ #{refund.to_digits}\t(Refund)"
-puts "\t- #{paye_result['paye'].to_digits}\t(PAYE)"
-puts "\t- #{usc_result['usc'].to_digits}\t(USC)"
-puts "\t- #{total_prsi.to_digits}\t(PRSI)"
-puts "\t- #{pension_contribution.to_digits}\t(Pension Contribution)"
-puts "\t- #{espp.to_digits}\t(ESPP)"
-puts "\t- #{misc_deductions_total.to_digits}\t(Misc Deductions)"
-net_income = gross_income + refund - paye_result['paye'] - usc_result['usc'] - total_prsi - pension_contribution - espp - misc_deductions_total
+puz "\t  #{gross_income.to_digits}\t(Gross Income)", gross_income
+puz "\t+ #{refund.to_digits}\t(Refund)", refund
+puz "\t- #{cr_voucher_amount.to_digits}\t(Connected Recognition Voucher)", cr_voucher_amount
+puz "\t- #{paye_result['paye'].to_digits}\t(PAYE)", paye_result['paye']
+puz "\t- #{usc_result['usc'].to_digits}\t(USC)", usc_result['usc']
+puz "\t- #{total_prsi.to_digits}\t(PRSI)", total_prsi
+puz "\t- #{pension_contribution.to_digits}\t(Pension Contribution)", pension_contribution
+puz "\t- #{espp.to_digits}\t(ESPP)", espp
+puz "\t- #{misc_deductions_total.to_digits}\t(Misc Deductions)", misc_deductions_total
+net_income = gross_income + refund - cr_voucher_amount - paye_result['paye'] - usc_result['usc'] - total_prsi - pension_contribution - espp - misc_deductions_total
 puts "\t= #{net_income.to_digits}"
 puts ""
 puts "TOTAL NET INCOME = #{net_income.to_digits}"
