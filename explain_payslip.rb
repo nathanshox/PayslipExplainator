@@ -263,6 +263,9 @@ end
 print 'Did you receive any refunds this pay period? Enter 0 for no refunds >: '
 refund = gets.to_d
 
+print 'Did you receive an ESPP gain this pay period? Enter 0 for no gain >: '
+espp_gain = gets.to_d
+
 print_header "Input Values"
 puts "These are the values the script is using to calculate your payslip\n"
 puts "-Regular Salary: #{regular_salary.to_digits}"
@@ -279,6 +282,7 @@ puts "-Salary Sacrifice: #{salary_sacrifice_hash}"
 puts "-Refund: #{refund.to_digits}"
 puts "-Benefit in Kind: #{benefit_in_kind_hash}"
 puts "-Misc Deductions: #{misc_deductions_hash}"
+puts "-ESPP Gain: #{espp_gain.to_digits}"
 puts "-PAYE Standard rate cutoff: #{standard_cutoff_rate.to_digits}"
 puts "-PAYE Tax credit: #{tax_credit.to_digits}"
 puts "-USC 2% Band: #{usc_two_percent_band.to_digits}"
@@ -357,8 +361,9 @@ pause unless !options.pause
 print_header "PAYE"
 puz "Input for PAYE\t+ #{gross_income.to_digits}\t\t(Gross Income)", gross_income
 puz "\t\t+ #{bik_total.to_digits}\t\t(Benefit In Kind)", bik_total
+puz "\t\t+ #{espp_gain.to_digits}\t\t(ESPP Gain)", espp_gain
 puz "\t\t- #{pension_contribution.to_digits}\t\t(Pension Contribution)", pension_contribution
-paye_input = gross_income + bik_total - pension_contribution
+paye_input = gross_income + bik_total + espp_gain - pension_contribution
 puts "Total Input\t= #{paye_input.to_digits}"
 puts ""
 
@@ -377,7 +382,8 @@ pause unless !options.pause
 print_header "USC"
 puz "Input for USC\t+ #{gross_income.to_digits}\t\t(Gross Income)", gross_income
 puz "\t\t+ #{bik_total.to_digits}\t\t(Benefit In Kind)", bik_total
-usc_input = gross_income + bik_total
+puz "\t\t+ #{espp_gain.to_digits}\t\t(ESPP Gain)", espp_gain
+usc_input = gross_income + bik_total + espp_gain
 puts "Total Input\t= #{usc_input.to_digits}"
 puts ""
 
@@ -395,7 +401,8 @@ pause unless !options.pause
 print_header "PRSI"
 puz "Input for PRSI\t+ #{gross_income.to_digits}\t\t(Gross Income)", gross_income
 puz "\t\t+ #{bik_total.to_digits}\t\t(Benefit In Kind)", bik_total
-prsi_input = gross_income + bik_total
+puz "\t\t+ #{espp_gain.to_digits}\t\t(ESPP Gain)", espp_gain
+prsi_input = gross_income + bik_total + espp_gain
 puts "Total Input\t= #{prsi_input.to_digits}"
 puts ""
 

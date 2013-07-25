@@ -1,5 +1,8 @@
 # Changelog
 
+### 1.2 (Unreleased)
+* Added handling of taxation of the gain from an ESPP purchase
+
 ### 1.1 (June 28th, 2013)
 * Connected Recognition Awards are handled in a special way.
 * No longer verify SSL when checking Github for updated version.
