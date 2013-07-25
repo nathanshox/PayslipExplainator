@@ -18,7 +18,7 @@ OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE unless RUBY_VERSION.to_f >
 
 REPO_LINK = "http://github.com/nathanshox/PayslipExplainator"
 
-SCRIPT_VERSION = 1.1
+SCRIPT_VERSION = 1.2
 SCRIPT_VERSION_FILE_URL = "https://raw.github.com/nathanshox/PayslipExplainator/master/version"
 
 class OptionsParser

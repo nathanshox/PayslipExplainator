@@ -1,6 +1,6 @@
 # Changelog
 
-### 1.2 (Unreleased)
+### 1.2 (July 25th, 2013)
 * Added handling of taxation of the gain from an ESPP purchase
 
 ### 1.1 (June 28th, 2013)
