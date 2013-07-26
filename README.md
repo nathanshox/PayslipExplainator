@@ -35,3 +35,5 @@ You will need:
   * Mac and Linux operating systems typically already have Ruby installed
   * There is an installer available for Windows at http://rubyinstaller.org/
   * The script was tested with versions 1.8.7, 1.9.2, 1.9.3, and 2.0.0
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/nathanshox/PayslipExplainator/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
