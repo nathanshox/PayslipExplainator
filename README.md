@@ -38,3 +38,7 @@ You will need:
 
 [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/nathanshox/PayslipExplainator/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 [![githalytics.com alpha](https://cruel-carlota.pagodabox.com/8f16fd2381e14da8f8c00af4da729056 "githalytics.com")](http://githalytics.com/nathanshox/PayslipExplainator)
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/nathanshox/PayslipExplainator/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
