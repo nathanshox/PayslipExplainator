@@ -1,6 +1,6 @@
 ##########################################################################################
 #                                                                                        #
-#                               Payslip Explainator Config                               #                          
+#                               Payslip Explainator Config                               #
 #                                                                                        #
 ##########################################################################################
 #
@@ -14,7 +14,7 @@ regular_salary: 0
 
 # Pension Contribution
 # If you are contributing to your pension, enter your % contribution here. Leave as 0 if
-# you are not contributing
+# you are not contributing. Use total percentage (base contribution plus any AVCs)
 pension_contribution_percentage: 0
 
 # Employee Stock Purchase Program
@@ -63,8 +63,9 @@ misc_deductions:
 
 # TAX DETAILS
 # The values for these items can be gotten from your Tax Certificate for the year.
-# You can get your certificate online via the PAYE Online service, or by rining your local
-# Revenue office.
+# Your values might be different to the standard ones.
+# The online system will give you your personal tax credits for the year as well
+# as your annual standard cutoff rate. Divide these by 12.
 #
 # NOTE: These need to be monthly values
 
@@ -72,6 +73,7 @@ misc_deductions:
 standard_cutoff_rate: 0
 tax_credit: 0
 
-# USC
-two_percent_band: 0 # Probably 836.34
-four_percent_band: 0 # Probably 498.34
+# USC - If it's 2018, leave the values as they are.
+point_five_percent_band: 1001 # probably 1001
+two_percent_band: 613.34 # Probably 613.34
+four_point_seven_five_percent_band: 4222.67 # Probably 4222.67
