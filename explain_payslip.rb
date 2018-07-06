@@ -292,7 +292,9 @@ puts "-Misc Deductions: #{misc_deductions_hash}"
 puts "-ESPP Gain: #{espp_gain.to_digits}"
 puts "-PAYE Standard rate cutoff: #{standard_cutoff_rate.to_digits}"
 puts "-PAYE Tax credit: #{tax_credit.to_digits}"
+puts "-USC 0.5% Band: #{usc_point_five_percent_band.to_digits}"
 puts "-USC 2% Band: #{usc_two_percent_band.to_digits}"
+puts "-USC 2% Band: #{usc_four_point_seven_five_percent_band.to_digits}"
 
 pause unless !options.pause
 
