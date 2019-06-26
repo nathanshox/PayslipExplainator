@@ -140,25 +140,31 @@ def calculate_paye(taxable_amount, standard_cutoff_rate, tax_credits)
   result['taxable_at_higher_rate_amount'] = taxable_amount > standard_cutoff_rate ? (taxable_amount - standard_cutoff_rate) : BigDecimal.new("0")
 
   result['tax_payable_at_lower_rate'] = (result['taxable_at_lower_rate_amount'] * BigDecimal.new("0.20"))
-  result['tax_payable_at_higher_rate'] = (result['taxable_at_higher_rate_amount'] * BigDecimal.new("0.41"))
+  result['tax_payable_at_higher_rate'] = (result['taxable_at_higher_rate_amount'] * BigDecimal.new("0.40"))
 
   result['paye_pre_tax_credits_deduction'] = result['tax_payable_at_lower_rate'] + result['tax_payable_at_higher_rate']
   result['paye'] = (result['paye_pre_tax_credits_deduction'] - tax_credits).round 2
   return result
 end
 
-def calculate_usc(taxable_amount, two_percent_band, four_percent_band)
+def calculate_usc(taxable_amount, point_five_percent_band, two_percent_band, four_point_seven_five_percent_band)
   result = Hash.new
 
-  result['chargable_at_two'] = taxable_amount > two_percent_band ? two_percent_band : taxable_amount
-  result['chargable_at_four'] = taxable_amount > (two_percent_band + four_percent_band) ? four_percent_band : ( taxable_amount > result['chargable_at_two'] ? (taxable_amount - result['chargable_at_two']) : BigDecimal.new("0"))
-  result['chargable_at_seven'] = taxable_amount > (two_percent_band + four_percent_band) ? (taxable_amount - (two_percent_band + four_percent_band)) : BigDecimal.new("0")
+  already_charged = 0
+  result['chargable_at_point_five'] = taxable_amount > point_five_percent_band ? point_five_percent_band : taxable_amount
+  already_charged += point_five_percent_band
+  result['chargable_at_two'] = taxable_amount > (already_charged + two_percent_band) ? two_percent_band : ( taxable_amount > already_charged ? (taxable_amount - already_charged) : BigDecimal.new("0"))
+  already_charged += two_percent_band
+  result['chargable_at_four_point_seven_five'] = taxable_amount > (already_charged + four_point_seven_five_percent_band) ? four_point_seven_five_percent_band : ( taxable_amount > already_charged ? (taxable_amount - already_charged) : BigDecimal.new("0"))
+  already_charged += four_point_seven_five_percent_band
+  result['chargable_at_eight'] = taxable_amount > already_charged ? (taxable_amount - already_charged) : BigDecimal.new("0")
 
+  result['usc_payable_at_point_five'] = (result['chargable_at_point_five'] * BigDecimal.new("0.005"))
   result['usc_payable_at_two'] = (result['chargable_at_two'] * BigDecimal.new("0.02"))
-  result['usc_payable_at_four'] = (result['chargable_at_four'] * BigDecimal.new("0.04"))
-  result['usc_payable_at_seven'] = (result['chargable_at_seven'] * BigDecimal.new("0.07"))
+  result['usc_payable_at_four_point_seven_five'] = (result['chargable_at_four_point_seven_five'] * BigDecimal.new("0.0475"))
+  result['usc_payable_at_eight'] = (result['chargable_at_eight'] * BigDecimal.new("0.08"))
 
-  result['usc'] = (result['usc_payable_at_two'] + result['usc_payable_at_four'] + result['usc_payable_at_seven']).round 2
+  result['usc'] = (result['usc_payable_at_point_five'] + result['usc_payable_at_two'] + result['usc_payable_at_four_point_seven_five'] + result['usc_payable_at_eight']).round 2
   return result
 end
 
@@ -201,7 +207,7 @@ if options.check_for_update
   rescue
     puts "Couldn't check for latest version of script."
     puts "Are you connected to the internet? Can you access #{REPO_LINK} in your web browser?"
-    puts "Continuing execution of script" 
+    puts "Continuing execution of script"
   end
 end
 
@@ -219,8 +225,9 @@ if File.exists? options.config_file_path
     misc_deductions_hash = load_hash_from_config config_file, "misc_deductions"
     standard_cutoff_rate = load_bd_from_config config_file, "standard_cutoff_rate"
     tax_credit = load_bd_from_config config_file, "tax_credit"
+    usc_point_five_percent_band = load_bd_from_config config_file, "point_five_percent_band"
     usc_two_percent_band = load_bd_from_config config_file, "two_percent_band"
-    usc_four_percent_band = load_bd_from_config config_file, "four_percent_band"
+    usc_four_point_seven_five_percent_band = load_bd_from_config config_file, "four_point_seven_five_percent_band"
   end
 else
   abort "Couldn't find #{options.config_file_path}. Does this file exist?"
@@ -285,8 +292,9 @@ puts "-Misc Deductions: #{misc_deductions_hash}"
 puts "-ESPP Gain: #{espp_gain.to_digits}"
 puts "-PAYE Standard rate cutoff: #{standard_cutoff_rate.to_digits}"
 puts "-PAYE Tax credit: #{tax_credit.to_digits}"
+puts "-USC 0.5% Band: #{usc_point_five_percent_band.to_digits}"
 puts "-USC 2% Band: #{usc_two_percent_band.to_digits}"
-puts "-USC 4% Band: #{usc_four_percent_band.to_digits}"
+puts "-USC 4.75% Band: #{usc_four_point_seven_five_percent_band.to_digits}"
 
 pause unless !options.pause
 
@@ -370,7 +378,7 @@ puts ""
 paye_result = calculate_paye paye_input, standard_cutoff_rate, tax_credit
 
 puts "#{paye_result['taxable_at_lower_rate_amount'].to_digits} @ 20%\t  #{paye_result['tax_payable_at_lower_rate'].round(2).to_digits}\t(#{paye_result['tax_payable_at_lower_rate'].to_digits})"
-puts "#{paye_result['taxable_at_higher_rate_amount'].to_digits} @ 41%\t  #{paye_result['tax_payable_at_higher_rate'].round(2).to_digits}\t(#{paye_result['tax_payable_at_higher_rate'].to_digits})"
+puts "#{paye_result['taxable_at_higher_rate_amount'].to_digits} @ 40%\t  #{paye_result['tax_payable_at_higher_rate'].round(2).to_digits}\t(#{paye_result['tax_payable_at_higher_rate'].to_digits})"
 puts "\t\t= #{paye_result['paye_pre_tax_credits_deduction'].round(2).to_digits}\t(#{paye_result['paye_pre_tax_credits_deduction'].to_digits})"
 puts "\t\t- #{tax_credit.to_digits} (Monthly tax credit)"
 puts ""
@@ -387,11 +395,13 @@ usc_input = gross_income + bik_total + espp_gain
 puts "Total Input\t= #{usc_input.to_digits}"
 puts ""
 
-usc_result = calculate_usc usc_input, usc_two_percent_band, usc_four_percent_band
+usc_result = calculate_usc usc_input, usc_point_five_percent_band, usc_two_percent_band, usc_four_point_seven_five_percent_band
 
+puts "#{usc_result['chargable_at_point_five'].to_digits} @ 0.5%\t  #{usc_result['usc_payable_at_point_five'].round(2).to_digits}\t(#{usc_result['usc_payable_at_point_five'].to_digits})"
 puts "#{usc_result['chargable_at_two'].to_digits} @ 2%\t  #{usc_result['usc_payable_at_two'].round(2).to_digits}\t(#{usc_result['usc_payable_at_two'].to_digits})"
-puts "#{usc_result['chargable_at_four'].to_digits} @ 4%\t  #{usc_result['usc_payable_at_four'].round(2).to_digits}\t(#{usc_result['usc_payable_at_four'].to_digits})"
-puts "#{usc_result['chargable_at_seven'].to_digits} @ 7%\t  #{usc_result['usc_payable_at_seven'].round(2).to_digits}\t(#{usc_result['usc_payable_at_seven'].to_digits})"
+puts "#{usc_result['chargable_at_four_point_seven_five'].to_digits} @ 4.75%\t  #{usc_result['usc_payable_at_four_point_seven_five'].round(2).to_digits}\t(#{usc_result['usc_payable_at_four_point_seven_five'].to_digits})"
+
+puts "#{usc_result['chargable_at_eight'].to_digits} @ 8%\t  #{usc_result['usc_payable_at_eight'].round(2).to_digits}\t(#{usc_result['usc_payable_at_eight'].to_digits})"
 puts ""
 puts "TOTAL USC\t= #{usc_result['usc'].to_digits}"
 
@@ -442,7 +452,7 @@ puts "TOTAL MISC DEDUCTIONS = #{misc_deductions_total.to_digits}"
 pause unless !options.pause
 
 # Net Pay ################################################################################
-print_header "Net Pay" 
+print_header "Net Pay"
 puz "\t  #{gross_income.to_digits}\t(Gross Income)", gross_income
 puz "\t+ #{refund.to_digits}\t(Refund)", refund
 puz "\t- #{cr_voucher_amount.to_digits}\t(Connected Recognition Voucher)", cr_voucher_amount
