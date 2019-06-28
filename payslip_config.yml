@@ -73,7 +73,7 @@ misc_deductions:
 standard_cutoff_rate: 0
 tax_credit: 0
 
-# USC - If it's 2018, leave the values as they are.
+# USC - If it's 2019, leave the values as they are.
 point_five_percent_band: 1001 # probably 1001
-two_percent_band: 613.34 # Probably 613.34
-four_point_seven_five_percent_band: 4222.67 # Probably 4222.67
+two_percent_band: 655.17 # Probably 655.17
+four_point_five_percent_band: 4180.84 # Probably 4180.84

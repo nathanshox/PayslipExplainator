@@ -147,7 +147,7 @@ def calculate_paye(taxable_amount, standard_cutoff_rate, tax_credits)
   return result
 end
 
-def calculate_usc(taxable_amount, point_five_percent_band, two_percent_band, four_point_seven_five_percent_band)
+def calculate_usc(taxable_amount, point_five_percent_band, two_percent_band, four_point_five_percent_band)
   result = Hash.new
 
   already_charged = 0
@@ -155,16 +155,16 @@ def calculate_usc(taxable_amount, point_five_percent_band, two_percent_band, fou
   already_charged += point_five_percent_band
   result['chargable_at_two'] = taxable_amount > (already_charged + two_percent_band) ? two_percent_band : ( taxable_amount > already_charged ? (taxable_amount - already_charged) : BigDecimal.new("0"))
   already_charged += two_percent_band
-  result['chargable_at_four_point_seven_five'] = taxable_amount > (already_charged + four_point_seven_five_percent_band) ? four_point_seven_five_percent_band : ( taxable_amount > already_charged ? (taxable_amount - already_charged) : BigDecimal.new("0"))
-  already_charged += four_point_seven_five_percent_band
+  result['chargable_at_four_point_five'] = taxable_amount > (already_charged + four_point_five_percent_band) ? four_point_five_percent_band : ( taxable_amount > already_charged ? (taxable_amount - already_charged) : BigDecimal.new("0"))
+  already_charged += four_point_five_percent_band
   result['chargable_at_eight'] = taxable_amount > already_charged ? (taxable_amount - already_charged) : BigDecimal.new("0")
 
   result['usc_payable_at_point_five'] = (result['chargable_at_point_five'] * BigDecimal.new("0.005"))
   result['usc_payable_at_two'] = (result['chargable_at_two'] * BigDecimal.new("0.02"))
-  result['usc_payable_at_four_point_seven_five'] = (result['chargable_at_four_point_seven_five'] * BigDecimal.new("0.0475"))
+  result['usc_payable_at_four_point_five'] = (result['chargable_at_four_point_five'] * BigDecimal.new("0.045"))
   result['usc_payable_at_eight'] = (result['chargable_at_eight'] * BigDecimal.new("0.08"))
 
-  result['usc'] = (result['usc_payable_at_point_five'] + result['usc_payable_at_two'] + result['usc_payable_at_four_point_seven_five'] + result['usc_payable_at_eight']).round 2
+  result['usc'] = (result['usc_payable_at_point_five'] + result['usc_payable_at_two'] + result['usc_payable_at_four_point_five'] + result['usc_payable_at_eight']).round 2
   return result
 end
 
@@ -227,7 +227,7 @@ if File.exists? options.config_file_path
     tax_credit = load_bd_from_config config_file, "tax_credit"
     usc_point_five_percent_band = load_bd_from_config config_file, "point_five_percent_band"
     usc_two_percent_band = load_bd_from_config config_file, "two_percent_band"
-    usc_four_point_seven_five_percent_band = load_bd_from_config config_file, "four_point_seven_five_percent_band"
+    usc_four_point_five_percent_band = load_bd_from_config config_file, "four_point_five_percent_band"
   end
 else
   abort "Couldn't find #{options.config_file_path}. Does this file exist?"
@@ -294,7 +294,7 @@ puts "-PAYE Standard rate cutoff: #{standard_cutoff_rate.to_digits}"
 puts "-PAYE Tax credit: #{tax_credit.to_digits}"
 puts "-USC 0.5% Band: #{usc_point_five_percent_band.to_digits}"
 puts "-USC 2% Band: #{usc_two_percent_band.to_digits}"
-puts "-USC 4.75% Band: #{usc_four_point_seven_five_percent_band.to_digits}"
+puts "-USC 4.5% Band: #{usc_four_point_five_percent_band.to_digits}"
 
 pause unless !options.pause
 
@@ -395,11 +395,11 @@ usc_input = gross_income + bik_total + espp_gain
 puts "Total Input\t= #{usc_input.to_digits}"
 puts ""
 
-usc_result = calculate_usc usc_input, usc_point_five_percent_band, usc_two_percent_band, usc_four_point_seven_five_percent_band
+usc_result = calculate_usc usc_input, usc_point_five_percent_band, usc_two_percent_band, usc_four_point_five_percent_band
 
 puts "#{usc_result['chargable_at_point_five'].to_digits} @ 0.5%\t  #{usc_result['usc_payable_at_point_five'].round(2).to_digits}\t(#{usc_result['usc_payable_at_point_five'].to_digits})"
 puts "#{usc_result['chargable_at_two'].to_digits} @ 2%\t  #{usc_result['usc_payable_at_two'].round(2).to_digits}\t(#{usc_result['usc_payable_at_two'].to_digits})"
-puts "#{usc_result['chargable_at_four_point_seven_five'].to_digits} @ 4.75%\t  #{usc_result['usc_payable_at_four_point_seven_five'].round(2).to_digits}\t(#{usc_result['usc_payable_at_four_point_seven_five'].to_digits})"
+puts "#{usc_result['chargable_at_four_point_five'].to_digits} @ 4.5%\t  #{usc_result['usc_payable_at_four_point_five'].round(2).to_digits}\t(#{usc_result['usc_payable_at_four_point_five'].to_digits})"
 
 puts "#{usc_result['chargable_at_eight'].to_digits} @ 8%\t  #{usc_result['usc_payable_at_eight'].round(2).to_digits}\t(#{usc_result['usc_payable_at_eight'].to_digits})"
 puts ""
@@ -459,6 +459,7 @@ puz "\t- #{cr_voucher_amount.to_digits}\t(Connected Recognition Voucher)", cr_vo
 puz "\t- #{paye_result['paye'].to_digits}\t(PAYE)", paye_result['paye']
 puz "\t- #{usc_result['usc'].to_digits}\t(USC)", usc_result['usc']
 puz "\t- #{total_prsi.to_digits}\t(PRSI)", total_prsi
+
 puz "\t- #{pension_contribution.to_digits}\t(Pension Contribution)", pension_contribution
 puz "\t- #{espp.to_digits}\t(ESPP)", espp
 puz "\t- #{misc_deductions_total.to_digits}\t(Misc Deductions)", misc_deductions_total
